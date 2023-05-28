@@ -100,6 +100,8 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 
 		setResizable(false);
 
+		btArr[0][0].requestFocusInWindow();
+
 		reset.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -131,27 +133,31 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 
 			switch (key) {
 			case KeyEvent.VK_UP: {
-				if (yFocus > 0)
+				if (yFocus > 0) {
 					btArr[yFocus][xFocus].setBackground(emptyColor);
-				yFocus -= 1;
+					yFocus -= 1;
+				}
 				break;
 			}
 			case KeyEvent.VK_DOWN: {
-				if (yFocus < btArr.length - 1)
+				if (yFocus < btArr.length - 1) {
 					btArr[yFocus][xFocus].setBackground(emptyColor);
-				yFocus += 1;
+					yFocus += 1;
+				}
 				break;
 			}
 			case KeyEvent.VK_LEFT: {
-				if (xFocus > 0)
+				if (xFocus > 0) {
 					btArr[yFocus][xFocus].setBackground(emptyColor);
-				xFocus -= 1;
+					xFocus -= 1;
+				}
 				break;
 			}
 			case KeyEvent.VK_RIGHT: {
-				if (xFocus < btArr[yFocus].length - 1)
+				if (xFocus < btArr[yFocus].length - 1) {
 					btArr[yFocus][xFocus].setBackground(emptyColor);
-				xFocus += 1;
+					xFocus += 1;
+				}
 				break;
 			}
 			}
