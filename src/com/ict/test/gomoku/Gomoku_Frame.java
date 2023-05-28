@@ -2,16 +2,17 @@ package com.ict.test.gomoku;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -25,7 +26,7 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 	boolean gomoku = false;
 	boolean boardFull = false;
 	int curTurn = 0;
-	
+
 	int xFocus = 0, yFocus = 0;
 
 	JPanel main, menu;
@@ -43,13 +44,16 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 	final static Color emptyColor = new Color(180, 90, 0);
 	final static Color blackColor = Color.BLACK;
 	final static Color whiteColor = Color.WHITE;
+	final static Color actionColor = new Color(184, 207, 229);
 
+	// 이미지 아이콘 만들기
+	int stoneSize = (int) (btSize * 0.9);
 	ImageIcon blackStoneOrigin = new ImageIcon("src/com/ict/test/gomoku/images/black.png");
 	ImageIcon whiteStoneOrigin = new ImageIcon("src/com/ict/test/gomoku/images/white.png");
 	Image blackOriginImage = blackStoneOrigin.getImage();
-	Image blackImage = blackOriginImage.getScaledInstance(btSize, btSize, Image.SCALE_SMOOTH);
+	Image blackImage = blackOriginImage.getScaledInstance(stoneSize, stoneSize, Image.SCALE_SMOOTH);
 	Image whiteOriginImage = whiteStoneOrigin.getImage();
-	Image whiteImage = whiteOriginImage.getScaledInstance(btSize, btSize, Image.SCALE_SMOOTH);
+	Image whiteImage = whiteOriginImage.getScaledInstance(stoneSize, stoneSize, Image.SCALE_SMOOTH);
 	ImageIcon blackStone = new ImageIcon(blackImage);
 	ImageIcon whiteStone = new ImageIcon(whiteImage);
 
@@ -71,6 +75,7 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 			for (int j = 0; j < btArr[i].length; j++) {
 				board[i][j] = new JPanel(new BorderLayout());
 				board[i][j].setBounds(panelSize);
+				board[i][j].setBackground(blackColor);
 				main.add(board[i][j]);
 			}
 		}
@@ -90,7 +95,6 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
-		btArr[xFocus][yFocus].requestFocus();
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -116,72 +120,51 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 
 	public class arrowkeysKeyAdapter extends KeyAdapter {
 		@Override
-		public void keyPressed(KeyEvent e) {
-			boolean isBtn = false;
-			System.out.println("이벤트 발생주체: " + e.getComponent().getName());
-			System.out.println("포커스 주인: " + getFocusOwner().getName());
+		public void keyTyped(KeyEvent e) {
+			// TODO Auto-generated method stub
+			super.keyTyped(e);
+		}
 
-			for (int i = 0; i < board.length && !isBtn; i++) {
-				for (int j = 0; j < board.length; j++) {
-					if (e.getSource() == (Object) btArr[i][j]) {
-						isBtn = true;
-						break;
-					}
-				}
+		@Override
+		public void keyReleased(KeyEvent e) {
+			int key = e.getKeyCode();
+
+			switch (key) {
+			case KeyEvent.VK_UP: {
+				if (yFocus > 0)
+					btArr[yFocus][xFocus].setBackground(emptyColor);
+				yFocus -= 1;
+				break;
+			}
+			case KeyEvent.VK_DOWN: {
+				if (yFocus < btArr.length - 1)
+					btArr[yFocus][xFocus].setBackground(emptyColor);
+				yFocus += 1;
+				break;
+			}
+			case KeyEvent.VK_LEFT: {
+				if (xFocus > 0)
+					btArr[yFocus][xFocus].setBackground(emptyColor);
+				xFocus -= 1;
+				break;
+			}
+			case KeyEvent.VK_RIGHT: {
+				if (xFocus < btArr[yFocus].length - 1)
+					btArr[yFocus][xFocus].setBackground(emptyColor);
+				xFocus += 1;
+				break;
+			}
 			}
 
-			if (isBtn) {
-				int key = e.getKeyCode();
-				switch (key) {
-				case KeyEvent.VK_UP: {
-					String[] strXY = new String[2];
-					strXY = getFocusOwner().getName().split(",");
-					int x = Integer.parseInt(strXY[0]);
-					int y = Integer.parseInt(strXY[1]);
-
-					if (y > 0) {
-						btArr[x][y - 1].requestFocus();
-					}
-
-					break;
-				}
-				case KeyEvent.VK_DOWN: {
-					String[] strXY = new String[2];
-					strXY = getFocusOwner().getName().split(",");
-					int x = Integer.parseInt(strXY[0]);
-					int y = Integer.parseInt(strXY[1]);
-
-					if (y < btArr[x].length - 1) {
-						btArr[x][y + 1].requestFocus();
-					}
-
-					break;
-				}
-				case KeyEvent.VK_LEFT: {
-					String[] strXY = new String[2];
-					strXY = getFocusOwner().getName().split(",");
-					int x = Integer.parseInt(strXY[0]);
-					int y = Integer.parseInt(strXY[1]);
-
-					if (x > 0) {
-						btArr[x - 1][y].requestFocus();
-					}
-
-					break;
-				}
-				case KeyEvent.VK_RIGHT: {
-					String[] strXY = new String[2];
-					strXY = getFocusOwner().getName().split(",");
-					int x = Integer.parseInt(strXY[0]);
-					int y = Integer.parseInt(strXY[1]);
-
-					if (x < btArr[x].length - 1) {
-						btArr[x + 1][y].requestFocus();
-					}
-
-					break;
-				}
-				}
+			switch (key) {
+			case KeyEvent.VK_UP:
+			case KeyEvent.VK_DOWN:
+			case KeyEvent.VK_LEFT:
+			case KeyEvent.VK_RIGHT:
+				JButton curBtn = (JButton) board[yFocus][xFocus].getComponent(0);
+				btArr[yFocus][xFocus].setBackground(actionColor);
+				curBtn.requestFocusInWindow();
+				setVisible(true);
 			}
 		}
 	}
@@ -201,16 +184,21 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 				btArr[i][j].setPreferredSize(ds);
 				btArr[i][j].setBackground(emptyColor);
 				btArr[i][j].addActionListener(this);
-				btArr[i][j].addKeyListener(keyAdapter);
 				board[i][j].add(btArr[i][j]);
+				btArr[i][j].addKeyListener(keyAdapter);
 			}
 		}
 
 		remove(jlGomoku);
 		remove(jlFull);
-		setVisible(true);
 
-		btArr[0][0].requestFocus();
+		btArr[yFocus][xFocus].setBackground(emptyColor);
+		xFocus = 0;
+		yFocus = 0;
+		btArr[0][0].setBackground(actionColor);
+		btArr[0][0].requestFocusInWindow();
+
+		setVisible(true);
 	}
 
 	@Override
@@ -230,12 +218,14 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 			}
 			obj.setPreferredSize(ds);
 			obj.setBackground(emptyColor);
-			obj.addKeyListener(keyAdapter);
 			board[x][y].add(obj);
+			obj.addKeyListener(keyAdapter);
+			btArr[yFocus][xFocus].setBackground(emptyColor);
+			yFocus = x;
+			xFocus = y;
+			btArr[yFocus][xFocus].setBackground(actionColor);
+			obj.requestFocusInWindow();
 			setVisible(true);
-			obj.requestFocus();
-			System.out.println("이벤트 발생주체: " + ((Component)e.getSource()).getName());
-			System.out.println("포커스 주인: " + getFocusOwner().getName());
 
 			gomoku = myGomoku.checkGomoku(x, y, curTurn);
 
