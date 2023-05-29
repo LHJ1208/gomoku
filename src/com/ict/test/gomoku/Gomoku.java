@@ -1,7 +1,9 @@
 package com.ict.test.gomoku;
 
+import java.awt.Point;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Stack;
 
 public class Gomoku {
 	static final int HORIZONTAL_SIZE = 10;
@@ -14,6 +16,8 @@ public class Gomoku {
 	static final int COUNT_GOMOKU = 5;
 
 	int[][] map;
+
+	Stack<Point> putList = new Stack<>();
 
 	public Gomoku() {
 		map = new int[VERTICAL_SIZE][HORIZONTAL_SIZE];
@@ -98,6 +102,39 @@ public class Gomoku {
 			default:
 				map[y][x] = STATE_EMPTY;
 			}
+		}
+
+		return result;
+	}
+
+	boolean pushPutList(int x, int y, int stateNum) {
+		boolean result = true;
+
+		if (setState(x, y, stateNum)) {
+			putList.push(new Point(x, y));
+		} else {
+			result = false;
+		}
+
+		return result;
+	}
+
+	Point popPutList() {
+		Point result = null;
+
+		if (putList.size() > 0) {
+			result = putList.pop();
+			map[result.y][result.x] = STATE_EMPTY;
+		}
+
+		return result;
+	}
+
+	Point peekPutList() {
+		Point result = null;
+
+		if (putList.size() > 0) {
+			result = putList.peek();
 		}
 
 		return result;

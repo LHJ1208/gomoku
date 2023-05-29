@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,6 +35,7 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 
 	JButton[][] btArr;
 
+	JButton undo;
 	JButton reset;
 	JButton exit;
 
@@ -65,7 +67,7 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 	public Gomoku_Frame() {
 		super("Gomoku");
 
-		main = new JPanel(new GridLayout(Gomoku.HORIZONTAL_SIZE, Gomoku.VERTICAL_SIZE));
+		main = new JPanel(new GridLayout(Gomoku.VERTICAL_SIZE, Gomoku.HORIZONTAL_SIZE));
 
 		board = new JPanel[Gomoku.VERTICAL_SIZE][Gomoku.HORIZONTAL_SIZE];
 
@@ -83,9 +85,15 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 		reset();
 
 		menu = new JPanel();
+		undo = new JButton("Undo");
 		reset = new JButton("Reset");
 		exit = new JButton("Exit");
 
+		undo.setMnemonic(KeyEvent.VK_U);
+		reset.setMnemonic(KeyEvent.VK_R);
+		exit.setMnemonic(KeyEvent.VK_E);
+
+		menu.add(undo);
 		menu.add(reset);
 		menu.add(exit);
 
@@ -101,6 +109,8 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 		setResizable(false);
 
 		btArr[0][0].requestFocusInWindow();
+
+		undo.addActionListener(new undoActionListener());
 
 		reset.addActionListener(new ActionListener() {
 			@Override
@@ -120,13 +130,43 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 		});
 	}
 
-	public class arrowkeysKeyAdapter extends KeyAdapter {
-		@Override
-		public void keyTyped(KeyEvent e) {
-			// TODO Auto-generated method stub
-			super.keyTyped(e);
-		}
+	public void addBtnToPanel(JButton[][] bArr, JPanel[][] pArr, int x, int y) {
+		pArr[y][x].removeAll();
+		bArr[y][x] = new JButton();
+		bArr[y][x].setName(x + "," + y);
+		bArr[y][x].setPreferredSize(ds);
+		bArr[y][x].setBackground(emptyColor);
+		bArr[y][x].addActionListener(Gomoku_Frame.this);
+		pArr[y][x].add(btArr[y][x]);
+		bArr[y][x].addKeyListener(keyAdapter);
+	}
 
+	public class undoActionListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			Point prev = myGomoku.popPutList();
+
+			if (prev != null) {
+				int x = prev.x;
+				int y = prev.y;
+
+				addBtnToPanel(btArr, board, x, y);
+
+				if (curTurn == Gomoku.STATE_BLACK) {
+					curTurn = Gomoku.STATE_WHITE;
+				} else if (curTurn == Gomoku.STATE_WHITE) {
+					curTurn = Gomoku.STATE_BLACK;
+				}
+
+				yFocus = y;
+				xFocus = x;
+				btArr[yFocus][xFocus].requestFocusInWindow();
+				setVisible(true);
+			}
+		}
+	}
+
+	public class arrowkeysKeyAdapter extends KeyAdapter {
 		@Override
 		public void keyReleased(KeyEvent e) {
 			int key = e.getKeyCode();
@@ -184,14 +224,7 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 
 		for (int i = 0; i < btArr.length; i++) {
 			for (int j = 0; j < btArr[i].length; j++) {
-				board[i][j].removeAll();
-				btArr[i][j] = new JButton();
-				btArr[i][j].setName(i + "," + j);
-				btArr[i][j].setPreferredSize(ds);
-				btArr[i][j].setBackground(emptyColor);
-				btArr[i][j].addActionListener(this);
-				board[i][j].add(btArr[i][j]);
-				btArr[i][j].addKeyListener(keyAdapter);
+				addBtnToPanel(btArr, board, j, i);
 			}
 		}
 
@@ -215,8 +248,8 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 		int x = Integer.parseInt(strXY[0]);
 		int y = Integer.parseInt(strXY[1]);
 
-		if (myGomoku.setState(x, y, curTurn) && !gomoku) {
-			board[x][y].removeAll();
+		if (!gomoku && myGomoku.pushPutList(x, y, curTurn)) {
+			board[y][x].removeAll();
 			if (curTurn == Gomoku.STATE_BLACK) {
 				obj = new JButton(blackStone);
 			} else if (curTurn == Gomoku.STATE_WHITE) {
@@ -224,11 +257,11 @@ public class Gomoku_Frame extends JFrame implements ActionListener {
 			}
 			obj.setPreferredSize(ds);
 			obj.setBackground(emptyColor);
-			board[x][y].add(obj);
+			board[y][x].add(obj);
 			obj.addKeyListener(keyAdapter);
 			btArr[yFocus][xFocus].setBackground(emptyColor);
-			yFocus = x;
-			xFocus = y;
+			yFocus = y;
+			xFocus = x;
 			btArr[yFocus][xFocus].setBackground(actionColor);
 			obj.requestFocusInWindow();
 			setVisible(true);
